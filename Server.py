@@ -179,7 +179,7 @@ def API():
     while True:
         try:
             with lock:
-                with sqlite3.connect(blockchain, timeout = 15) as blockconn:
+                with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as blockconn:
                     blockdatab = blockconn.cursor()
                     blockdatab.execute("SELECT blocks FROM Server") # Read amount of mined blocks
                     blocks = int(blockdatab.fetchone()[0])
@@ -455,7 +455,7 @@ def handle(c):
                     break
                 if re.match(r'^[\w\d_()]*$', username): # Check username for unallowed characters
                     try:
-                        with sqlite3.connect(database) as conn: # User exists, read his password
+                        with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn: # User exists, read his password
                             datab = conn.cursor()
                             datab.execute("SELECT * FROM Users WHERE username = ?",(str(username),))
                             stored_password = datab.fetchone()[1]
@@ -465,7 +465,7 @@ def handle(c):
                     try:
                         if bcrypt.checkpw(password, stored_password) or password == duco_password.encode('utf-8') or password == NodeS_Overide.encode('utf-8'):
                             c.send(bytes("OK", encoding='utf8')) # Send feedback about sucessfull login
-                            with sqlite3.connect(database) as conn: # User exists, read his password
+                            with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn: # User exists, read his password
                                 datab = conn.cursor()
                                 datab.execute("DELETE FROM Users WHERE username = ?",(str(username),))
                                 conn.commit()
@@ -477,7 +477,7 @@ def handle(c):
                             stored_password = str(stored_password).encode('utf-8')
                             if bcrypt.checkpw(password, stored_password) or password == duco_password.encode('utf-8'):
                                 c.send(bytes("OK", encoding='utf8')) # Send feedback about sucessfull login
-                                with sqlite3.connect(database) as conn: # User exists, read his password
+                                with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn: # User exists, read his password
                                     datab = conn.cursor()
                                     datab.execute("DELETE FROM Users WHERE username = ?",(str(username),))
                                     conn.commit()
@@ -503,7 +503,7 @@ def handle(c):
                     break
                 if re.match(r'^[\w\d_()]*$', username): # Check username for unallowed characters
                     try:
-                        with sqlite3.connect(database) as conn: # User exists, read his password
+                        with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn: # User exists, read his password
                             datab = conn.cursor()
                             datab.execute("SELECT * FROM Users WHERE username = ?",(str(username),))
                             stored_password = datab.fetchone()[1]
@@ -541,7 +541,7 @@ def handle(c):
                         c.send(bytes("NO,Not enough data", encoding='utf8'))
                         break
                 try:
-                    with sqlite3.connect(blockchain, timeout=20) as blockconn:
+                    with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as blockconn:
                         blockdatab = blockconn.cursor()
                         blockdatab.execute("SELECT blocks FROM Server") # Read amount of mined blocks
                         blocks = int(blockdatab.fetchone()[0])
@@ -625,7 +625,7 @@ def handle(c):
                         c.send(bytes("GOOD", encoding="utf8")) # Send feedback that result was correct
                         while True:
                             try:
-                                with sqlite3.connect(database, timeout=15) as conn: # Get users balance and check if it exists
+                                with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn: # Get users balance and check if it exists
                                     datab = conn.cursor()
                                     datab.execute("SELECT * FROM Users WHERE username = ?", (username,))
                                     balance = float(datab.fetchone()[3])
@@ -641,7 +641,7 @@ def handle(c):
                         break
                     while True:
                         try:
-                            with sqlite3.connect(blockchain, timeout=20) as blockconn: # Update blocks counter and lastblock's hash
+                            with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as blockconn: # Update blocks counter and lastblock's hash
                                 blocks += 1
                                 blockdatab = blockconn.cursor()
                                 blockdatab.execute("UPDATE Server set blocks = ? ", (blocks,))
@@ -659,7 +659,7 @@ def handle(c):
 
                     while True:
                         try:
-                            with sqlite3.connect(database, timeout=15) as conn:
+                            with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                 datab = conn.cursor()
                                 datab.execute("SELECT * FROM Users WHERE username = ?", (username,))
                                 balance = str(datab.fetchone()[3]) # Get miner balance
@@ -667,7 +667,7 @@ def handle(c):
                                     balance = float(balance) - int(int(sharetime) *2) / 750000000 # Calculate penalty dependent on share submission time
                                     while True:
                                         try:
-                                            with sqlite3.connect(database) as conn:
+                                            with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                                 datab = conn.cursor() # Update his the balance
                                                 datab.execute("UPDATE Users set balance = ? where username = ?", (f'{balance:.20f}', username))
                                                 conn.commit()
@@ -811,7 +811,7 @@ def handle(c):
                         c.send(bytes("NO,Not enough data", encoding="utf8"))
                         break
                     try:
-                        with sqlite3.connect(database) as conn:
+                        with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                             datab = conn.cursor()
                             datab.execute("SELECT * FROM Users WHERE username = ?",(username,))
                             balance = float(datab.fetchone()[3]) # Get current balance
@@ -838,7 +838,7 @@ def handle(c):
                                 print("All checks done, initiating wrapping routine")
                                 balance -= float(amount) # Remove amount from senders' balance
                                 print("DUCO removed from pending balance")
-                                with sqlite3.connect(database) as conn:
+                                with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                     datab = conn.cursor()
                                     datab.execute("UPDATE Users set balance = ? where username = ?", (balance, username))
                                     conn.commit()
@@ -876,7 +876,7 @@ def handle(c):
                     tron_address = str(data[2])
                     while True:
                         try:
-                            with sqlite3.connect(database) as conn:
+                            with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                 print("Retrieving user balance...")
                                 datab = conn.cursor()
                                 datab.execute("SELECT * FROM Users WHERE username = ?",(username,))
@@ -896,7 +896,7 @@ def handle(c):
                                 balance = str(float(balance)+float(amount))
                                 while True:
                                     try:
-                                        with sqlite3.connect(database) as conn:
+                                        with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                             datab = conn.cursor()
                                             datab.execute("UPDATE Users set balance = ? where username = ?", (balance, username))
                                             conn.commit()
@@ -919,7 +919,7 @@ def handle(c):
                                     else:
                                         while True:
                                             try:
-                                                with sqlite3.connect(database) as conn:
+                                                with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                                     datab = conn.cursor()
                                                     datab.execute("UPDATE Users set balance = ? where username = ?", (balancebackup, username))
                                                     conn.commit()
