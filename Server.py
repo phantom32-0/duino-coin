@@ -14,7 +14,7 @@ from email.mime.multipart import MIMEMultipart
 import mysql.connector
 
 Database_User = "DucoServer"
-Database_Name = "DucoTest"
+Database_Name = "ducotest"
 Database_password = "DucoTest123"
 Database_Host = "127.0.0.1"
 Database_Port = 3306
@@ -25,14 +25,15 @@ serverVersion = 1.9 # Server version which will be sent to the clients
 diff_incrase_per = 2000 # Difficulty will increase every x blocks (official server uses 2k)
 use_wrapper = True # Choosing if you want to use wrapper or not
 wrapper_permission = False # set to false for declaration, will be updated by checking smart contract
+wrapper_public_key = "sfewf"
 lock = threading.Lock()
 config = configparser.ConfigParser()
 try:
-    config.read('AdminData.ini')
-    duco_email = config["main"]["duco_email"]
-    duco_password = config["main"]["duco_password"]
-    NodeS_Overide = config["main"]["NodeS_Overide"]
-    wrapper_private_key = config["main"]["wrapper_private_key"]
+##    config.read('AdminData.ini')
+    duco_email = "Duco@gmail.com"
+    duco_password = "verySecureDucoPassword"
+    NodeS_Overide = "verySecureDucoPassword"
+    wrapper_private_key = "verySecureDucoPassword"
 except:
     print("""Please create AdminData.ini config file first:
         [main]
@@ -70,25 +71,18 @@ connectedUsers = 0
 database = 'crypto_database.db' # User data database location
 with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
     datab = conn.cursor()
-    datab.execute('''CREATE TABLE IF NOT EXISTS Users(username TEXT, password TEXT, email TEXT, balance REAL)''')
-    datab.execute('''CREATE TABLE IF NOT EXISTS Server(blocks REAL, lastBlockHash TEXT)''')
+    datab.execute('''CREATE TABLE IF NOT EXISTS users(username TEXT, password TEXT, email TEXT, balance REAL)''')
+    datab.execute('''CREATE TABLE IF NOT EXISTS server(blocks REAL, lastBlockHash TEXT)''')
     
     lastBlockHash = "ba29a15896fd2d792d5c4b60668bf2b9feebc51d" # First block - SHA1 of "duino-coin"
     blocks = 1 # Start from 1
     
-    datab.execute("INSERT INTO Server(blocks, lastBlockHash) VALUES(?, ?)", (blocks, lastBlockHash))
-    datab.commit()
+    datab.execute("INSERT INTO server(blocks, lastBlockHash) VALUES(%s, %s)", (blocks, lastBlockHash))
+    conn.commit()
     
     
         
 blockchain = 'duino_blockchain.db' # Blockchain database location
-if use_wrapper:
-    import tronpy # tronpy isn't default installed, install it with "pip install tronpy"
-    from tronpy.keys import PrivateKey, PublicKey
-    wrapper_public_key = PrivateKey(bytes.fromhex(wrapper_private_key)).public_key.to_base58check_address() # wrapper's public key
-    tron = tronpy.Tron(network="mainnet")
-    wduco = tron.get_contract("TWYaXdxA12JywrUdou3PFD1fvx2PWjqK9U") # wDUCO contract
-    wrapper_permission = wduco.functions.checkWrapperStatus(wrapper_public_key)
 # def createBackup():
     # if not os.path.isdir('backups/'):
         # os.mkdir('backups/')
