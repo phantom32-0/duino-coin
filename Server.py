@@ -282,7 +282,7 @@ def InputManagement():
                 try:
                     with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                         datab = conn.cursor()
-                        datab.execute("SELECT * FROM Users WHERE username = ?",(userInput[1],))
+                        datab.execute("SELECT * FROM Users WHERE username = %s",(userInput[1],))
                         balance = str(datab.fetchone()[3]) # Fetch balance of user
                         print(userInput[1] + "'s balance: " + str(balance))
                 except:
@@ -292,18 +292,18 @@ def InputManagement():
                 try:
                     with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                         datab = conn.cursor()
-                        datab.execute("SELECT * FROM Users WHERE username = ?",(userInput[1],))
+                        datab.execute("SELECT * FROM Users WHERE username = %s",(userInput[1],))
                         balance = str(datab.fetchone()[3]) # Fetch balance of user
                     print("  " + userInput[1] + "'s balance is " + str(balance) + ", set it to " + str(float(userInput[2])) + "?")
                     confirm = input("  Y/n")
                     if confirm == "Y" or confirm == "y" or confirm == "":
                         with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                             datab = conn.cursor()
-                            datab.execute("UPDATE Users set balance = ? where username = ?", (float(userInput[2]), userInput[1]))
+                            datab.execute("UPDATE Users set balance = %s where username = %s", (float(userInput[2]), userInput[1]))
                             conn.commit()
                         with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                             datab = conn.cursor()
-                            datab.execute("SELECT * FROM Users WHERE username = ?",(userInput[1],))
+                            datab.execute("SELECT * FROM Users WHERE username = %s",(userInput[1],))
                             balance = str(datab.fetchone()[3]) # Fetch balance of user
                         print("User balance is now " + str(balance))
                     else:
@@ -315,18 +315,18 @@ def InputManagement():
                 try:
                     with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                         datab = conn.cursor()
-                        datab.execute("SELECT * FROM Users WHERE username = ?",(userInput[1],))
+                        datab.execute("SELECT * FROM Users WHERE username = %s",(userInput[1],))
                         balance = str(datab.fetchone()[3]) # Fetch balance of user
                     print("  " + userInput[1] + "'s balance is " + str(balance) + ", subtract " + str(float(userInput[2])) + "?")
                     confirm = input("  Y/n")
                     if confirm == "Y" or confirm == "y" or confirm == "":
                         with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                             datab = conn.cursor()
-                            datab.execute("UPDATE Users set balance = ? where username = ?", (float(balance)-float(userInput[2]), userInput[1]))
+                            datab.execute("UPDATE Users set balance = %s where username = %s", (float(balance)-float(userInput[2]), userInput[1]))
                             conn.commit()
                         with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                             datab = conn.cursor()
-                            datab.execute("SELECT * FROM Users WHERE username = ?",(userInput[1],))
+                            datab.execute("SELECT * FROM Users WHERE username = %s",(userInput[1],))
                             balance = str(datab.fetchone()[3]) # Fetch balance of user
                         print("User balance is now " + str(balance))
                     else:
@@ -338,18 +338,18 @@ def InputManagement():
                 try:
                     with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                         datab = conn.cursor()
-                        datab.execute("SELECT * FROM Users WHERE username = ?",(userInput[1],))
+                        datab.execute("SELECT * FROM Users WHERE username = %s",(userInput[1],))
                         balance = str(datab.fetchone()[3]) # Fetch balance of user
                     print("  " + userInput[1] + "'s balance is " + str(balance) + ", add " + str(float(userInput[2])) + "?")
                     confirm = input("  Y/n")
                     if confirm == "Y" or confirm == "y" or confirm == "":
                         with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                             datab = conn.cursor()
-                            datab.execute("UPDATE Users set balance = ? where username = ?", (float(balance)+float(userInput[2]), userInput[1]))
+                            datab.execute("UPDATE Users set balance = %s where username = %s", (float(balance)+float(userInput[2]), userInput[1]))
                             conn.commit()
                         with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                             datab = conn.cursor()
-                            datab.execute("SELECT * FROM Users WHERE username = ?",(userInput[1],))
+                            datab.execute("SELECT * FROM Users WHERE username = %s",(userInput[1],))
                             balance = str(datab.fetchone()[3]) # Fetch balance of user
                         print("User balance is now " + str(balance))
                     else:
@@ -408,7 +408,7 @@ def handle(c):
                     password = bcrypt.hashpw(unhashed_pass, bcrypt.gensalt()) # Encrypt password
                     with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                         datab = conn.cursor()
-                        datab.execute("SELECT COUNT(username) FROM Users WHERE username = ?",(username,))
+                        datab.execute("SELECT COUNT(username) FROM Users WHERE username = %s",(username,))
                         if int(datab.fetchone()[0]) == 0:
                             if "@" in email and "." in email:
                                 message = MIMEMultipart("alternative")
@@ -418,7 +418,7 @@ def handle(c):
                                 try:
                                     with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                         datab = conn.cursor()
-                                        datab.execute('''INSERT INTO Users(username, password, email, balance) VALUES(?, ?, ?, ?)''',(username, password, email, 0.0))
+                                        datab.execute('''INSERT INTO Users(username, password, email, balance) VALUES(%s, %s, %s, %s)''',(username, password, email, 0.0))
                                         conn.commit()
                                     c.send(bytes("OK", encoding='utf8'))
                                     try:
@@ -457,7 +457,7 @@ def handle(c):
                     try:
                         with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn: # User exists, read his password
                             datab = conn.cursor()
-                            datab.execute("SELECT * FROM Users WHERE username = ?",(str(username),))
+                            datab.execute("SELECT * FROM Users WHERE username = %s",(str(username),))
                             stored_password = datab.fetchone()[1]
                     except: # Disconnect user which username doesn't exist, close the connection
                         c.send(bytes("NO,This user doesn't exist", encoding='utf8'))
@@ -467,7 +467,7 @@ def handle(c):
                             c.send(bytes("OK", encoding='utf8')) # Send feedback about sucessfull login
                             with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn: # User exists, read his password
                                 datab = conn.cursor()
-                                datab.execute("DELETE FROM Users WHERE username = ?",(str(username),))
+                                datab.execute("DELETE FROM Users WHERE username = %s",(str(username),))
                                 conn.commit()
                         else: # Disconnect user which password isn't valid, close the connection
                             c.send(bytes("NO,Password is invalid", encoding='utf8'))
@@ -479,7 +479,7 @@ def handle(c):
                                 c.send(bytes("OK", encoding='utf8')) # Send feedback about sucessfull login
                                 with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn: # User exists, read his password
                                     datab = conn.cursor()
-                                    datab.execute("DELETE FROM Users WHERE username = ?",(str(username),))
+                                    datab.execute("DELETE FROM Users WHERE username = %s",(str(username),))
                                     conn.commit()
                             else: # Disconnect user which password isn't valid, close the connection
                                 c.send(bytes("NO,Password is invalid", encoding='utf8'))
@@ -505,7 +505,7 @@ def handle(c):
                     try:
                         with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn: # User exists, read his password
                             datab = conn.cursor()
-                            datab.execute("SELECT * FROM Users WHERE username = ?",(str(username),))
+                            datab.execute("SELECT * FROM Users WHERE username = %s",(str(username),))
                             stored_password = datab.fetchone()[1]
                     except: # Disconnect user which username doesn't exist, close the connection
                         c.send(bytes("NO,This user doesn't exist", encoding='utf8'))
@@ -627,11 +627,11 @@ def handle(c):
                             try:
                                 with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn: # Get users balance and check if it exists
                                     datab = conn.cursor()
-                                    datab.execute("SELECT * FROM Users WHERE username = ?", (username,))
+                                    datab.execute("SELECT * FROM Users WHERE username = %s", (username,))
                                     balance = float(datab.fetchone()[3])
                                     balance += float(reward) # Reward user
                                     datab = conn.cursor()
-                                    datab.execute("UPDATE Users set balance = ? where username = ?", (f'{balance:.20f}', username))
+                                    datab.execute("UPDATE Users set balance = %s where username = %s", (f'{balance:.20f}', username))
                                     conn.commit()
                                     break
                             except:
@@ -644,8 +644,8 @@ def handle(c):
                             with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as blockconn: # Update blocks counter and lastblock's hash
                                 blocks += 1
                                 blockdatab = blockconn.cursor()
-                                blockdatab.execute("UPDATE Server set blocks = ? ", (blocks,))
-                                blockdatab.execute("UPDATE Server set lastBlockHash = ?", (newBlockHash,))
+                                blockdatab.execute("UPDATE Server set blocks = %s ", (blocks,))
+                                blockdatab.execute("UPDATE Server set lastBlockHash = %s", (newBlockHash,))
                                 blockconn.commit()
                                 break
                         except:
@@ -661,7 +661,7 @@ def handle(c):
                         try:
                             with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                 datab = conn.cursor()
-                                datab.execute("SELECT * FROM Users WHERE username = ?", (username,))
+                                datab.execute("SELECT * FROM Users WHERE username = %s", (username,))
                                 balance = str(datab.fetchone()[3]) # Get miner balance
                                 if float(balance) > .00005:
                                     balance = float(balance) - int(int(sharetime) *2) / 750000000 # Calculate penalty dependent on share submission time
@@ -669,7 +669,7 @@ def handle(c):
                                         try:
                                             with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                                 datab = conn.cursor() # Update his the balance
-                                                datab.execute("UPDATE Users set balance = ? where username = ?", (f'{balance:.20f}', username))
+                                                datab.execute("UPDATE Users set balance = %s where username = %s", (f'{balance:.20f}', username))
                                                 conn.commit()
                                                 break
                                         except:
@@ -696,7 +696,7 @@ def handle(c):
                 try:
                     with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                         datab = conn.cursor()
-                        datab.execute("SELECT * FROM Users WHERE username = ?",(username,))
+                        datab.execute("SELECT * FROM Users WHERE username = %s",(username,))
                         old_password_database = datab.fetchone()[1]
                 except:
                     c.send(bytes("NO,Incorrect username", encoding="utf8"))
@@ -705,7 +705,7 @@ def handle(c):
                 if bcrypt.checkpw(oldPassword, old_password_database) or oldPassword == duco_password.encode('utf-8'):
                     with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                         datab = conn.cursor()
-                        datab.execute("UPDATE Users set password = ? where username = ?", (newPassword_encrypted, username))
+                        datab.execute("UPDATE Users set password = %s where username = %s", (newPassword_encrypted, username))
                         conn.commit()
                         try:
                             c.send(bytes("OK,Your password has been changed", encoding='utf8'))
@@ -730,7 +730,7 @@ def handle(c):
                         try:
                             with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                 datab = conn.cursor()
-                                datab.execute("SELECT * FROM Users WHERE username = ?",(username,))
+                                datab.execute("SELECT * FROM Users WHERE username = %s",(username,))
                                 balance = float(datab.fetchone()[3]) # Get current balance of sender
                                 break
                         except:
@@ -755,7 +755,7 @@ def handle(c):
                                 try:
                                     with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                         datab = conn.cursor()
-                                        datab.execute("UPDATE Users set balance = ? where username = ?", (balance, username))
+                                        datab.execute("UPDATE Users set balance = %s where username = %s", (balance, username))
                                         conn.commit()
                                         break
                                 except:
@@ -764,7 +764,7 @@ def handle(c):
                                 try:
                                     with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                         datab = conn.cursor()
-                                        datab.execute("SELECT * FROM Users WHERE username = ?",(recipient,))
+                                        datab.execute("SELECT * FROM Users WHERE username = %s",(recipient,))
                                         recipientbal = float(datab.fetchone()[3]) # Get receipents' balance
                                         break
                                 except:
@@ -774,7 +774,7 @@ def handle(c):
                                 try:
                                     with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                         datab = conn.cursor() # Update receipents' balance
-                                        datab.execute("UPDATE Users set balance = ? where username = ?", (f'{float(recipientbal):.20f}', recipient))
+                                        datab.execute("UPDATE Users set balance = %s where username = %s", (f'{float(recipientbal):.20f}', recipient))
                                         conn.commit()
                                         c.send(bytes("OK,Successfully transferred funds!", encoding='utf8'))
                                         break
@@ -790,7 +790,7 @@ def handle(c):
                     try:
                         with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                             datab = conn.cursor()
-                            datab.execute("SELECT * FROM Users WHERE username = ?",(username,))
+                            datab.execute("SELECT * FROM Users WHERE username = %s",(username,))
                             balance = str(datab.fetchone()[3]) # Fetch balance of user
                             try:
                                 c.send(bytes(str(f'{float(balance):.20f}'), encoding="utf8")) # Send it as 20 digit float
@@ -813,7 +813,7 @@ def handle(c):
                     try:
                         with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                             datab = conn.cursor()
-                            datab.execute("SELECT * FROM Users WHERE username = ?",(username,))
+                            datab.execute("SELECT * FROM Users WHERE username = %s",(username,))
                             balance = float(datab.fetchone()[3]) # Get current balance
                     except:
                         c.send(bytes("NO,Can't check balance", encoding='utf8'))
@@ -840,7 +840,7 @@ def handle(c):
                                 print("DUCO removed from pending balance")
                                 with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                     datab = conn.cursor()
-                                    datab.execute("UPDATE Users set balance = ? where username = ?", (balance, username))
+                                    datab.execute("UPDATE Users set balance = %s where username = %s", (balance, username))
                                     conn.commit()
                                 print("DUCO balance sent to DB, sending tron transaction")
                                 print("Tron wrapper called !")
@@ -858,7 +858,7 @@ def handle(c):
                                         break
                                 else:
                                     try:
-                                        datab.execute("UPDATE Users set balance = ? where username = ?", (balancebackup, username))
+                                        datab.execute("UPDATE Users set balance = %s where username = %s", (balancebackup, username))
                                         c.send(bytes("NO,Unknown error, transaction reverted", encoding="utf8"))
                                     except:
                                         break
@@ -879,7 +879,7 @@ def handle(c):
                             with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                 print("Retrieving user balance...")
                                 datab = conn.cursor()
-                                datab.execute("SELECT * FROM Users WHERE username = ?",(username,))
+                                datab.execute("SELECT * FROM Users WHERE username = %s",(username,))
                                 balance = float(datab.fetchone()[3]) # Get current balance
                                 break
                         except:
@@ -898,7 +898,7 @@ def handle(c):
                                     try:
                                         with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                             datab = conn.cursor()
-                                            datab.execute("UPDATE Users set balance = ? where username = ?", (balance, username))
+                                            datab.execute("UPDATE Users set balance = %s where username = %s", (balance, username))
                                             conn.commit()
                                             break
                                     except:
@@ -921,7 +921,7 @@ def handle(c):
                                             try:
                                                 with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                                     datab = conn.cursor()
-                                                    datab.execute("UPDATE Users set balance = ? where username = ?", (balancebackup, username))
+                                                    datab.execute("UPDATE Users set balance = %s where username = %s", (balancebackup, username))
                                                     conn.commit()
                                                     break
                                             except:
