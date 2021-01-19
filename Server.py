@@ -13,6 +13,12 @@ from email.mime.multipart import MIMEMultipart
 
 import mysql.connector
 
+Database_User = "DucoServer"
+Database_Name = "DucoTest"
+Database_password = "DucoTest123"
+Database_Host = "127.0.0.1"
+Database_Port = 3306
+
 host = "" # Server will use this as hostname to bind to (localhost on Windows, 0.0.0.0 on Linux in most cases)
 port = 2811 # Server will listen on this port - 2811 for official Duino-Coin server (14808 for old one)
 serverVersion = 1.9 # Server version which will be sent to the clients
@@ -62,27 +68,20 @@ html = """\
 minerapi = {}
 connectedUsers = 0
 database = 'crypto_database.db' # User data database location
-if not os.path.isfile(database): # Create it if it doesn't exist
-    with sqlite3.connect(database, timeout = 15) as conn:
-        datab = conn.cursor()
-        datab.execute('''CREATE TABLE IF NOT EXISTS Users(username TEXT, password TEXT, email TEXT, balance REAL)''')
+with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
+    datab = conn.cursor()
+    datab.execute('''CREATE TABLE IF NOT EXISTS Users(username TEXT, password TEXT, email TEXT, balance REAL)''')
+    datab.execute('''CREATE TABLE IF NOT EXISTS Server(blocks REAL, lastBlockHash TEXT)''')
+    
+    lastBlockHash = "ba29a15896fd2d792d5c4b60668bf2b9feebc51d" # First block - SHA1 of "duino-coin"
+    blocks = 1 # Start from 1
+    
+    datab.execute("INSERT INTO Server(blocks, lastBlockHash) VALUES(?, ?)", (blocks, lastBlockHash))
+    datab.commit()
+    
+    
+        
 blockchain = 'duino_blockchain.db' # Blockchain database location
-if not os.path.isfile(blockchain): # Create it if it doesn't exist
-    with sqlite3.connect(blockchain, timeout = 15) as blockconn:
-        try:
-            with open("config/lastblock", "r+") as lastblockfile:
-                lastBlockHash = lastblockfile.readline() # If old database is found, read lastBlockHash from it
-        except:
-            lastBlockHash = "ba29a15896fd2d792d5c4b60668bf2b9feebc51d" # First block - SHA1 of "duino-coin"
-        try:
-            with open("config/blocks", "r+") as blockfile:
-                blocks = blockfile.readline() # If old database is found, read mined blocks amount from it
-        except:
-            blocks = 1 # Start from 1
-        blockdatab = blockconn.cursor()
-        blockdatab.execute('''CREATE TABLE IF NOT EXISTS Server(blocks REAL, lastBlockHash TEXT)''')
-        blockdatab.execute("INSERT INTO Server(blocks, lastBlockHash) VALUES(?, ?)", (blocks, lastBlockHash))
-        blockconn.commit()
 if use_wrapper:
     import tronpy # tronpy isn't default installed, install it with "pip install tronpy"
     from tronpy.keys import PrivateKey, PublicKey
@@ -90,18 +89,18 @@ if use_wrapper:
     tron = tronpy.Tron(network="mainnet")
     wduco = tron.get_contract("TWYaXdxA12JywrUdou3PFD1fvx2PWjqK9U") # wDUCO contract
     wrapper_permission = wduco.functions.checkWrapperStatus(wrapper_public_key)
-def createBackup():
-    if not os.path.isdir('backups/'):
-        os.mkdir('backups/')
-    while True:
-        today = datetime.date.today()
-        if not os.path.isdir('backups/'+str(today)+'/'):
-            os.mkdir('backups/'+str(today))
-            copyfile(blockchain, "backups/"+str(today)+"/"+blockchain)
-            copyfile(database, "backups/"+str(today)+"/"+database)
-            with open("prices.txt", "a") as pricesfile:
-                pricesfile.write("," + str(round(getDucoPrice(), 4)).rstrip("\n"))
-        time.sleep(3600*6) # Run every 6h
+# def createBackup():
+    # if not os.path.isdir('backups/'):
+        # os.mkdir('backups/')
+    # while True:
+        # today = datetime.date.today()
+        # if not os.path.isdir('backups/'+str(today)+'/'):
+            # os.mkdir('backups/'+str(today))
+            # copyfile(blockchain, "backups/"+str(today)+"/"+blockchain)
+            # copyfile(database, "backups/"+str(today)+"/"+database)
+            # with open("prices.txt", "a") as pricesfile:
+                # pricesfile.write("," + str(round(getDucoPrice(), 4)).rstrip("\n"))
+        # time.sleep(3600*6) # Run every 6h
 def getDucoPrice():
     coingecko = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=magi&vs_currencies=usd", data=None)
     if coingecko.status_code == 200:
@@ -127,7 +126,7 @@ def getDucoPriceBTC():
 def getRegisteredUsers():
     while True:
         try:
-            with sqlite3.connect(database, timeout = 15) as conn:
+            with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                 datab = conn.cursor()
                 datab.execute("SELECT COUNT(username) FROM Users")
                 registeredUsers = datab.fetchone()[0]
@@ -138,7 +137,7 @@ def getRegisteredUsers():
 def getMinedDuco():
     while True:
         try:
-            with sqlite3.connect(database, timeout = 15) as conn:
+            with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                 datab = conn.cursor()
                 datab.execute("SELECT SUM(balance) FROM Users")
                 allMinedDuco = datab.fetchone()[0]
@@ -150,7 +149,7 @@ def getLeaders():
     while True:
         try:
             leadersdata = []
-            with sqlite3.connect(database, timeout = 15) as conn:
+            with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                 datab = conn.cursor()
                 datab.execute("SELECT * FROM Users ORDER BY balance DESC")
                 for row in datab.fetchall():
@@ -163,7 +162,7 @@ def getAllBalances():
     while True:
         try:
             leadersdata = {}
-            with sqlite3.connect(database, timeout = 15) as conn:
+            with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                 datab = conn.cursor()
                 datab.execute("SELECT * FROM Users ORDER BY balance DESC")
                 for row in datab.fetchall():
@@ -287,7 +286,7 @@ def InputManagement():
         elif userInput[0] == "balance":
             with lock:
                 try:
-                    with sqlite3.connect(database, timeout = 15) as conn:
+                    with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                         datab = conn.cursor()
                         datab.execute("SELECT * FROM Users WHERE username = ?",(userInput[1],))
                         balance = str(datab.fetchone()[3]) # Fetch balance of user
@@ -297,18 +296,18 @@ def InputManagement():
         elif userInput[0] == "set":
             with lock:
                 try:
-                    with sqlite3.connect(database, timeout = 15) as conn:
+                    with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                         datab = conn.cursor()
                         datab.execute("SELECT * FROM Users WHERE username = ?",(userInput[1],))
                         balance = str(datab.fetchone()[3]) # Fetch balance of user
                     print("  " + userInput[1] + "'s balance is " + str(balance) + ", set it to " + str(float(userInput[2])) + "?")
                     confirm = input("  Y/n")
                     if confirm == "Y" or confirm == "y" or confirm == "":
-                        with sqlite3.connect(database, timeout = 15) as conn:
+                        with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                             datab = conn.cursor()
                             datab.execute("UPDATE Users set balance = ? where username = ?", (float(userInput[2]), userInput[1]))
                             conn.commit()
-                        with sqlite3.connect(database, timeout = 15) as conn:
+                        with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                             datab = conn.cursor()
                             datab.execute("SELECT * FROM Users WHERE username = ?",(userInput[1],))
                             balance = str(datab.fetchone()[3]) # Fetch balance of user
@@ -320,18 +319,18 @@ def InputManagement():
         elif userInput[0] == "subtract":
             with lock:
                 try:
-                    with sqlite3.connect(database, timeout = 15) as conn:
+                    with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                         datab = conn.cursor()
                         datab.execute("SELECT * FROM Users WHERE username = ?",(userInput[1],))
                         balance = str(datab.fetchone()[3]) # Fetch balance of user
                     print("  " + userInput[1] + "'s balance is " + str(balance) + ", subtract " + str(float(userInput[2])) + "?")
                     confirm = input("  Y/n")
                     if confirm == "Y" or confirm == "y" or confirm == "":
-                        with sqlite3.connect(database, timeout = 15) as conn:
+                        with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                             datab = conn.cursor()
                             datab.execute("UPDATE Users set balance = ? where username = ?", (float(balance)-float(userInput[2]), userInput[1]))
                             conn.commit()
-                        with sqlite3.connect(database, timeout = 15) as conn:
+                        with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                             datab = conn.cursor()
                             datab.execute("SELECT * FROM Users WHERE username = ?",(userInput[1],))
                             balance = str(datab.fetchone()[3]) # Fetch balance of user
@@ -343,18 +342,18 @@ def InputManagement():
         elif userInput[0] == "add":
             with lock:
                 try:
-                    with sqlite3.connect(database, timeout = 15) as conn:
+                    with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                         datab = conn.cursor()
                         datab.execute("SELECT * FROM Users WHERE username = ?",(userInput[1],))
                         balance = str(datab.fetchone()[3]) # Fetch balance of user
                     print("  " + userInput[1] + "'s balance is " + str(balance) + ", add " + str(float(userInput[2])) + "?")
                     confirm = input("  Y/n")
                     if confirm == "Y" or confirm == "y" or confirm == "":
-                        with sqlite3.connect(database, timeout = 15) as conn:
+                        with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                             datab = conn.cursor()
                             datab.execute("UPDATE Users set balance = ? where username = ?", (float(balance)+float(userInput[2]), userInput[1]))
                             conn.commit()
-                        with sqlite3.connect(database, timeout = 15) as conn:
+                        with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                             datab = conn.cursor()
                             datab.execute("SELECT * FROM Users WHERE username = ?",(userInput[1],))
                             balance = str(datab.fetchone()[3]) # Fetch balance of user
@@ -413,7 +412,7 @@ def handle(c):
                     break
                 if re.match("^[A-Za-z0-9_-]*$", username) and len(username) < 64 and len(unhashed_pass) < 64 and len(email) < 128:
                     password = bcrypt.hashpw(unhashed_pass, bcrypt.gensalt()) # Encrypt password
-                    with sqlite3.connect(database, timeout = 15) as conn:
+                    with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                         datab = conn.cursor()
                         datab.execute("SELECT COUNT(username) FROM Users WHERE username = ?",(username,))
                         if int(datab.fetchone()[0]) == 0:
@@ -423,7 +422,7 @@ def handle(c):
                                 message["From"] = duco_email
                                 message["To"] = email
                                 try:
-                                    with sqlite3.connect(database, timeout = 15) as conn:
+                                    with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                         datab = conn.cursor()
                                         datab.execute('''INSERT INTO Users(username, password, email, balance) VALUES(?, ?, ?, ?)''',(username, password, email, 0.0))
                                         conn.commit()
@@ -701,7 +700,7 @@ def handle(c):
                     c.send(bytes("NO,Bcrypt error", encoding="utf8"))
                     break
                 try:
-                    with sqlite3.connect(database, timeout = 15) as conn:
+                    with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                         datab = conn.cursor()
                         datab.execute("SELECT * FROM Users WHERE username = ?",(username,))
                         old_password_database = datab.fetchone()[1]
@@ -710,7 +709,7 @@ def handle(c):
                     break
 
                 if bcrypt.checkpw(oldPassword, old_password_database) or oldPassword == duco_password.encode('utf-8'):
-                    with sqlite3.connect(database, timeout = 15) as conn:
+                    with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                         datab = conn.cursor()
                         datab.execute("UPDATE Users set password = ? where username = ?", (newPassword_encrypted, username))
                         conn.commit()
@@ -735,7 +734,7 @@ def handle(c):
                 with lock:
                     while True:
                         try:
-                            with sqlite3.connect(database, timeout = 15) as conn:
+                            with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                 datab = conn.cursor()
                                 datab.execute("SELECT * FROM Users WHERE username = ?",(username,))
                                 balance = float(datab.fetchone()[3]) # Get current balance of sender
@@ -760,7 +759,7 @@ def handle(c):
                         with lock:
                             while True:
                                 try:
-                                    with sqlite3.connect(database, timeout = 15) as conn:
+                                    with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                         datab = conn.cursor()
                                         datab.execute("UPDATE Users set balance = ? where username = ?", (balance, username))
                                         conn.commit()
@@ -769,7 +768,7 @@ def handle(c):
                                     pass
                             while True:
                                 try:
-                                    with sqlite3.connect(database, timeout = 15) as conn:
+                                    with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                         datab = conn.cursor()
                                         datab.execute("SELECT * FROM Users WHERE username = ?",(recipient,))
                                         recipientbal = float(datab.fetchone()[3]) # Get receipents' balance
@@ -779,7 +778,7 @@ def handle(c):
                             recipientbal += float(amount)
                             while True:
                                 try:
-                                    with sqlite3.connect(database, timeout = 15) as conn:
+                                    with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                                         datab = conn.cursor() # Update receipents' balance
                                         datab.execute("UPDATE Users set balance = ? where username = ?", (f'{float(recipientbal):.20f}', recipient))
                                         conn.commit()
@@ -795,7 +794,7 @@ def handle(c):
             elif str(data[0]) == "BALA" and str(username) != "":
                 while True:
                     try:
-                        with sqlite3.connect(database, timeout = 15) as conn:
+                        with mysql.connector.connect(user=Database_User, password=Database_password, host=Database_Host, port=Database_Port, database=Database_Name) as conn:
                             datab = conn.cursor()
                             datab.execute("SELECT * FROM Users WHERE username = ?",(username,))
                             balance = str(datab.fetchone()[3]) # Fetch balance of user
@@ -984,7 +983,7 @@ def resetips():
 if __name__ == '__main__':
     print("Duino-Coin Master Server", serverVersion, "is starting...")
     threading.Thread(target=API).start() # Create JSON API thread
-    threading.Thread(target=createBackup).start() # Create Backup generator thread
+    # threading.Thread(target=createBackup).start() # Create Backup generator thread
     threading.Thread(target=countips).start() # Start anti-DDoS thread
     threading.Thread(target=resetips).start() # Start connection counter reseter for the ant-DDoS thread
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
