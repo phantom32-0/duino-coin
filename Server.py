@@ -11,6 +11,8 @@ from shutil import copyfile
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+import mysql.connector
+
 host = "" # Server will use this as hostname to bind to (localhost on Windows, 0.0.0.0 on Linux in most cases)
 port = 2811 # Server will listen on this port - 2811 for official Duino-Coin server (14808 for old one)
 serverVersion = 1.9 # Server version which will be sent to the clients
