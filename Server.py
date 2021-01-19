@@ -19,7 +19,7 @@ Database_password = "DucoTest123"
 Database_Host = "127.0.0.1"
 Database_Port = 3306
 
-host = "" # Server will use this as hostname to bind to (localhost on Windows, 0.0.0.0 on Linux in most cases)
+host = "0.0.0.0" # Server will use this as hostname to bind to (localhost on Windows, 0.0.0.0 on Linux in most cases)
 port = 2811 # Server will listen on this port - 2811 for official Duino-Coin server (14808 for old one)
 serverVersion = 1.9 # Server version which will be sent to the clients
 diff_incrase_per = 2000 # Difficulty will increase every x blocks (official server uses 2k)
@@ -77,8 +77,8 @@ with mysql.connector.connect(user=Database_User, password=Database_password, hos
     lastBlockHash = "ba29a15896fd2d792d5c4b60668bf2b9feebc51d" # First block - SHA1 of "duino-coin"
     blocks = 1 # Start from 1
     
-    datab.execute("INSERT INTO server(blocks, lastBlockHash) VALUES(%s, %s)", (blocks, lastBlockHash))
-    conn.commit()
+##    datab.execute("INSERT INTO server(blocks, lastBlockHash) VALUES(%s, %s)", (blocks, lastBlockHash))
+##    conn.commit()
     
     
         
@@ -427,9 +427,9 @@ def handle(c):
                                         message.attach(part1)
                                         message.attach(part2)
                                         context = ssl.create_default_context() # Create secure connection with server and send an email
-                                        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context = context) as smtpserver:
-                                            smtpserver.login(duco_email, duco_password)
-                                            smtpserver.sendmail(duco_email, email, message.as_string())
+##                                        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context = context) as smtpserver:
+##                                            smtpserver.login(duco_email, duco_password)
+##                                            smtpserver.sendmail(duco_email, email, message.as_string())
                                     except:
                                         print("Error sending registration email")
                                 except:
