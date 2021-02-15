@@ -474,8 +474,8 @@ def Thread(
                     content = (
                         res.content.decode().splitlines()
                     )  # Read content and split into lines
-                    masterServer_address = content[0]  # Line 1 = pool address
-                    masterServer_port = content[1]  # Line 2 = pool port
+                    masterServer_address = "127.0.0.1"  # Line 1 = pool address
+                    masterServer_port = 2811  # Line 2 = pool port
                     debugOutput(
                         "Retrieved pool IP: "
                         + masterServer_address

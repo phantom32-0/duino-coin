@@ -5,7 +5,7 @@ import socket, hashlib, urllib.request, time, os, sys  # Only python3 included l
 soc = socket.socket()
 soc.settimeout(10)
 
-username = "your username here"  # Edit this to your username, mind the quotes
+username = "connor"  # Edit this to your username, mind the quotes
 UseLowerDiff = False  # Set it to True to mine with lower difficulty
 
 while True:
@@ -16,8 +16,8 @@ while True:
             content = (
                 content.read().decode().splitlines()
             )  # Read content and split into lines
-        pool_address = content[0]  # Line 1 = pool address
-        pool_port = content[1]  # Line 2 = pool port
+        pool_address = "127.0.0.1"  # Line 1 = pool address
+        pool_port = 2811  # Line 2 = pool port
 
         # This section connects and logs user to the server
         soc.connect((str(pool_address), int(pool_port)))  # Connect to the server

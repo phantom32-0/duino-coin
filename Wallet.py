@@ -94,8 +94,8 @@ with urlopen(
     "https://raw.githubusercontent.com/revoxhere/duino-coin/gh-pages/serverip.txt"
 ) as content:
     content = content.read().decode().splitlines()
-    pool_address = content[0]
-    pool_port = content[1]
+    pool_address = "127.0.0.1"
+    pool_port = 2811
 
 
 def GetDucoPrice():
