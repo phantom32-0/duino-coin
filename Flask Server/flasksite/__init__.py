@@ -40,7 +40,8 @@ def database():
     else:
         query = request.args.get('query')
 
-
+    print("="*80)
+    print(query)
 
     try:
         with sqlite3.connect("mainDB.db", timeout = 15) as conn:
@@ -60,7 +61,10 @@ def database():
                 else:
                     return jsonify({'value': c.fetchall()})
 
+        print("="*80)
     except Exception as e:
+        print(e)
+        print("="*80)
         return jsonify({'error': str(e)})
 
 

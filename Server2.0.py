@@ -25,7 +25,7 @@ host = "" # Server will use this as hostname to bind to (localhost on Windows, 0
 port = 2811 # Server will listen on this port - 2811 for official Duino-Coin server
 serverVersion = 2.0 # Server version which will be sent to the clients
 diff_incrase_per = 2000 # Difficulty will increase every x blocks (official server uses 2k)
-use_wrapper = True # Choosing if you want to use wrapper or not
+use_wrapper = False # Choosing if you want to use wrapper or not
 wrapper_permission = False # set to false for declaration, will be updated by checking smart contract
 lock = threading.Lock()
 config = configparser.ConfigParser()
@@ -304,12 +304,11 @@ def UpdateDatabase():
             try:
                 for user in balancesToUpdate.copy():
                     try:
-                        balance = str(query(f"SELECT * FROM Users WHERE username = {user}", fetch='one')[3]) # Fetch balance of user
+                        balance = str(query(f"SELECT * FROM Users WHERE username = '{user}'", fetch='one')[3]) # Fetch balance of user
                         if not float(balancesToUpdate[user]) < 0:
-                            datab.execute("UPDATE Users set balance = balance + ? where username = ?", (float(balancesToUpdate[user]), user))
-                            query(f"UPDATE Users set balance = balance + {float(balancesToUpdate[user])} where username = {user}")
+                            query(f"UPDATE Users set balance = balance + {float(balancesToUpdate[user])} where username = '{user}'")
                         if float(balance) < 0:
-                            query(f"UPDATE Users set balance = balance + {float(0)} where username = {user}")
+                            query(f"UPDATE Users set balance = balance + {float(0)} where username = '{user}'")
                         balancesToUpdate.pop(user)
                     except:
                         continue
@@ -318,8 +317,8 @@ def UpdateDatabase():
                 pass
         while True:
             try:
-                query(f"UPDATE Server set blocks = {blocks}")
-                query(f"UPDATE Server set lastBlockHash = {lastBlockHash}")
+                query(f"UPDATE Server set blocks = '{blocks}'")
+                query(f"UPDATE Server set lastBlockHash = '{lastBlockHash}'")
             except Exception as e:
                 print(e)
                 pass
@@ -375,19 +374,19 @@ def InputManagement():
         elif userInput[0] == "balance":
             with lock:
                 try:
-                    balance = str(query(f"SELECT * FROM Users WHERE username = {userInput[1]}", fetch='one')[3]) # Fetch balance of user
+                    balance = str(query(f"SELECT * FROM Users WHERE username = '{userInput[1]}'", fetch='one')[3]) # Fetch balance of user
                     print(userInput[1] + "'s balance: " + str(balance))
                 except:
                     print("User '" + userInput[1] + "' doesn't exist")
         elif userInput[0] == "set":
             with lock:
                 try:
-                    balance = str(query(f"SELECT * FROM Users WHERE username = {userInput[1]}", fetch='one')[3])
+                    balance = str(query(f"SELECT * FROM Users WHERE username = '{userInput[1]}'", fetch='one')[3])
                     print("  " + userInput[1] + "'s balance is " + str(balance) + ", set it to " + str(float(userInput[2])) + "?")
                     confirm = input("  Y/n")
                     if confirm == "Y" or confirm == "y" or confirm == "":
-                        query(f"UPDATE Users set balance = {float(userInput[2])} where username = {userInput[1]}")
-                        balance = str(query(f"SELECT * FROM Users WHERE username = {userInput[1]}", fetch='one')[3]) # Fetch balance of user
+                        query(f"UPDATE Users set balance = {float(userInput[2])} where username = '{userInput[1]}'")
+                        balance = str(query(f"SELECT * FROM Users WHERE username = '{userInput[1]}'", fetch='one')[3]) # Fetch balance of user
                         print("User balance is now " + str(balance))
                     else:
                         print("Canceled")
@@ -396,13 +395,13 @@ def InputManagement():
         elif userInput[0] == "subtract":
             with lock:
                 try:
-                    balance = str(query(f"SELECT * FROM Users WHERE username = {userInput[1]}", fetch='one')[3])
+                    balance = str(query(f"SELECT * FROM Users WHERE username = '{userInput[1]}'", fetch='one')[3])
                     print("  " + userInput[1] + "'s balance is " + str(balance) + ", subtract " + str(float(userInput[2])) + "?")
                     confirm = input("  Y/n")
                     if confirm == "Y" or confirm == "y" or confirm == "":
-                        query(f"UPDATE Users set balance = {float(balance)-float(userInput[2])} where username = {userInput[1]}")
+                        query(f"UPDATE Users set balance = {float(balance)-float(userInput[2])} where username = '{userInput[1]}'")
 
-                        balance = str(query(f"SELECT * FROM Users WHERE username = {userInput[1]}", fetch='one')[3])
+                        balance = str(query(f"SELECT * FROM Users WHERE username = '{userInput[1]}'", fetch='one')[3])
 
                         print("User balance is now " + str(balance))
                     else:
@@ -412,13 +411,13 @@ def InputManagement():
         elif userInput[0] == "add":
             with lock:
                 try:
-                    balance = str(query(f"SELECT * FROM Users WHERE username = {userInput[1]}", fetch='one')[3])
+                    balance = str(query(f"SELECT * FROM Users WHERE username = '{userInput[1]}'", fetch='one')[3])
                     print("  " + userInput[1] + "'s balance is " + str(balance) + ", add " + str(float(userInput[2])) + "?")
                     confirm = input("  Y/n")
                     if confirm == "Y" or confirm == "y" or confirm == "":
-                        query(f"UPDATE Users set balance = {float(balance)+float(userInput[2])} where username = {userInput[1]}")
+                        query(f"UPDATE Users set balance = {float(balance)+float(userInput[2])} where username = '{userInput[1]}'")
 
-                        balance = str(query(f"SELECT * FROM Users WHERE username = {userInput[1]}", fetch='one')[3])
+                        balance = str(query(f"SELECT * FROM Users WHERE username = '{userInput[1]}'", fetch='one')[3])
 
                         print("User balance is now " + str(balance))
                     else:
@@ -478,14 +477,14 @@ def handle(c, ip):
                     break
                 if re.match("^[A-Za-z0-9_-]*$", username) and len(username) < 64 and len(unhashed_pass) < 64 and len(email) < 128:
                     password = bcrypt.hashpw(unhashed_pass, bcrypt.gensalt()) # Encrypt password
-                    if query(f"SELECT COUNT(username) FROM Users WHERE username = {username}", fetch='one') == 0:
+                    if query(f"SELECT COUNT(username) FROM Users WHERE username = '{username}'", fetch='one')[0] == 0:
                         if "@" in email and "." in email:
                             message = MIMEMultipart("alternative")
                             message["Subject"] = "Welcome on Duino-Coin network, "+str(username)+"! " + u"\U0001F44B"
                             message["From"] = duco_email
                             message["To"] = email
                             try:
-                                query(f"INSERT INTO Users(username, password, email, balance) VALUES({username}, {password}, {email}, {0.0})")
+                                query(f"INSERT INTO Users(username, password, email, balance) VALUES('{username}', '{password.decode('utf-8')}', '{email}', {0.0})")
                                 c.send(bytes("OK", encoding='utf8'))
                                 try:
                                     part1 = MIMEText(text, "plain") # Turn email data into plain/html MIMEText objects
@@ -521,7 +520,7 @@ def handle(c, ip):
                     break
                 if re.match(r'^[\w\d_()]*$', username): # Check username for unallowed characters
                     try:
-                        stored_password = query(f"SELECT * FROM Users WHERE username = {username}", fetch='one')[1]
+                        stored_password = query(f"SELECT * FROM Users WHERE username = '{username}'", fetch='one')[1]
 
                     except: # Disconnect user which username doesn't exist, close the connection
                         c.send(bytes("NO,This user doesn't exist", encoding='utf8'))
@@ -552,7 +551,7 @@ def handle(c, ip):
             elif str(data[0]) == "BALA" and str(username) != "":
                 while True:
                     try:
-                        balance = str(query(f"SELECT * FROM Users WHERE username = {username}", fetch='one')[3]) # Fetch balance of user
+                        balance = str(query(f"SELECT * FROM Users WHERE username = '{username}'", fetch='one')[3]) # Fetch balance of user
                         try:
                             c.send(bytes(str(f'{float(balance):.20f}'), encoding="utf8")) # Send it as 20 digit float
                         except:
@@ -670,7 +669,7 @@ def handle(c, ip):
                             now = datetime.datetime.now()
                             formatteddatetime = now.strftime("%d/%m/%Y %H:%M:%S")
 
-                            query(f"INSERT INTO Blocks(timestamp, finder, amount, hash) VALUES({formatteddatetime}, {username}, {reward}, {newBlockHash})")
+                            query(f"INSERT INTO Blocks(timestamp, finder, amount, hash) VALUES({formatteddatetime}, '{username}', {reward}, '{newBlockHash}')")
 
                             print("Block found", formatteddatetime, username, reward, newBlockHash)
                             c.send(bytes("BLOCK", encoding="utf8")) # Send feedback that block was found
@@ -714,7 +713,7 @@ def handle(c, ip):
                     print("Bcrypt error")
                     break
                 try:
-                    old_password_database = query(f"SELECT * FROM Users WHERE username = {username}", fetch='one')[1]
+                    old_password_database = query(f"SELECT * FROM Users WHERE username = '{username}'", fetch='one')[1]
                     print("Fetched old pass")
                 except:
                     c.send(bytes("NO,Incorrect username", encoding="utf8"))
@@ -722,7 +721,7 @@ def handle(c, ip):
                     break
                 try:
                     if bcrypt.checkpw(oldPassword, old_password_database.encode('utf-8')) or oldPassword == duco_password.encode('utf-8'):
-                        query(f"UPDATE Users set password = {newPassword_encrypted} where username = {username}")
+                        query(f"UPDATE Users set password = {newPassword_encrypted} where username = '{username}'")
                         print("Changed pass")
                         try:
                             c.send(bytes("OK,Your password has been changed", encoding='utf8'))
@@ -736,7 +735,7 @@ def handle(c, ip):
                             break
                 except:
                     if bcrypt.checkpw(oldPassword, old_password_database) or oldPassword == duco_password.encode('utf-8'):
-                        query(f"UPDATE Users set password = {newPassword_encrypted} where username = {username}")
+                        query(f"UPDATE Users set password = {newPassword_encrypted} where username = '{username}'")
                         print("Changed pass")
                         try:
                             c.send(bytes("OK,Your password has been changed", encoding='utf8'))
@@ -760,7 +759,7 @@ def handle(c, ip):
                 print("Sending protocol called")
                 while True:
                     try:
-                        balance = float(query(f"SELECT * FROM Users WHERE username = {username}", fetch='one')[3]) # Get current balance of sender
+                        balance = float(query(f"SELECT * FROM Users WHERE username = '{username}'", fetch='one')[3]) # Get current balance of sender
                         print("Read senders balance:", balance)
                         break
                     except:
@@ -785,7 +784,7 @@ def handle(c, ip):
                             with lock:
                                 while True:
                                     try:
-                                        query(f"UPDATE Users set balance = {balance} where username = {username}")
+                                        query(f"UPDATE Users set balance = {balance} where username = '{username}'")
                                         print("Updated senders balance:", balance)
                                         break
                                     except:
@@ -803,7 +802,7 @@ def handle(c, ip):
                                         query(f"UPDATE Users set balance = {float(recipientbal):.20f} where username = {recipient}")
                                         print("Updated recipients balance:", recipientbal)
 
-                                        query(f"INSERT INTO Transactions(timestamp, username, recipient, amount, hash) VALUES({formatteddatetime}, {username}, {recipient}, {amount}, {lastBlockHash})")
+                                        query(f"INSERT INTO Transactions(timestamp, username, recipient, amount, hash) VALUES({formatteddatetime}, '{username}', '{recipient}', {amount}, '{lastBlockHash}'')")
                                         c.send(bytes("OK,Successfully transferred funds,"+str(lastBlockHash), encoding='utf8'))
 
                                         break
@@ -832,7 +831,7 @@ def handle(c, ip):
                         c.send(bytes("NO,Not enough data", encoding="utf8"))
                         break
                     try:
-                        str(query(f"SELECT * FROM Users WHERE username = {username}", fetch='one')[3]) # Get current balance
+                        str(query(f"SELECT * FROM Users WHERE username = '{username}'", fetch='one')[3]) # Get current balance
                     except:
                         c.send(bytes("NO,Can't check balance", encoding='utf8'))
                         break
@@ -857,7 +856,7 @@ def handle(c, ip):
                                 balance -= float(amount) # Remove amount from senders' balance
                                 print("DUCO removed from pending balance")
 
-                                query(f"UPDATE Users set balance = {balance} where username = {username}")
+                                query(f"UPDATE Users set balance = {balance} where username = '{username}'")
 
                                 print("DUCO balance sent to DB, sending tron transaction")
                                 print("Tron wrapper called !")
@@ -872,7 +871,7 @@ def handle(c, ip):
                                         c.send(bytes("OK,Success, check your balances,"+str(lastBlockHash), encoding='utf8'))
                                         print("Successful wrapping")
                                         try:
-                                            query(f"INSERT INTO Transactions(timestamp, username, recipient, amount, hash) VALUES({formatteddatetime}, {username}, {str('wrapper - ')+str(tron_address)}, {amount}, {lastBlockHash})")
+                                            query(f"INSERT INTO Transactions(timestamp, username, recipient, amount, hash) VALUES({formatteddatetime}, '{username}', '{str('wrapper - ')+str(tron_address)}', {amount}, '{lastBlockHash}'')")
 
                                             c.send(bytes("OK,Success, check your balances,"+str(lastBlockHash), encoding='utf8'))
                                         except:
@@ -881,7 +880,7 @@ def handle(c, ip):
                                         break
                                 else:
                                     try:
-                                        query(f"UPDATE Users set balance = {balancebackup} where username = {username}")
+                                        query(f"UPDATE Users set balance = {balancebackup} where username = '{username}'")
                                         c.send(bytes("NO,Unknown error, transaction reverted", encoding="utf8"))
                                     except:
                                         pass
@@ -900,7 +899,7 @@ def handle(c, ip):
                     while True:
                         try:
                             print("Retrieving user balance...")
-                            balance = float(query(f"SELECT * FROM Users WHERE username = {username}", fetch='one')[3]) # Get current balance
+                            balance = float(query(f"SELECT * FROM Users WHERE username = '{username}'", fetch='one')[3]) # Get current balance
                             break
                         except:
                             pass
@@ -916,7 +915,7 @@ def handle(c, ip):
                                 balance = str(float(balance)+float(amount))
                                 while True:
                                     try:
-                                        query(f"UPDATE Users set balance = {balance} where username = {username}")
+                                        query(f"UPDATE Users set balance = {balance} where username = '{username}'")
                                         break
                                     except:
                                         pass
@@ -931,14 +930,14 @@ def handle(c, ip):
                                     if onchaintx:
                                         print("Successful unwrapping")
                                         try:
-                                            query(f"INSERT INTO Transactions(timestamp, username, recipient, amount, hash) VALUES({formatteddatetime}, {str('wrapper - ')+str(tron_address)}, {username}, {amount}, {lastBlockHash})")
+                                            query(f"INSERT INTO Transactions(timestamp, username, recipient, amount, hash) VALUES({formatteddatetime}, '{str('wrapper - ')+str(tron_address)}', '{username}', {amount}, '{lastBlockHash}'')")
                                             c.send(bytes("OK,Success, check your balances,"+str(lastBlockHash), encoding='utf8'))
                                         except:
                                             pass
                                     else:
                                         while True:
                                             try:
-                                                query(f"UPDATE Users set balance = {balancebackup} where username = {username}")
+                                                query(f"UPDATE Users set balance = {balancebackup} where username = '{username}'")
                                                 break
                                             except:
                                                 pass
@@ -1017,8 +1016,8 @@ def resetips():
 
 if __name__ == '__main__':
     print("Duino-Coin Master Server", serverVersion, "is starting")
-    threading.Thread(target=API).start() # Create JSON API thread
-    threading.Thread(target=createBackup).start() # Create Backup generator thread
+    # threading.Thread(target=API).start() # Create JSON API thread # uncomment
+    # threading.Thread(target=createBackup).start() # Create Backup generator thread
     threading.Thread(target=countips).start() # Start anti-DDoS thread
     threading.Thread(target=resetips).start() # Start connection counter reseter for the ant-DDoS thread
     threading.Thread(target=getBlocks).start() # Start database updater
@@ -1030,7 +1029,9 @@ if __name__ == '__main__':
     print("Socket binded to port", port)
     # Put the socket into listening mode
     s.listen(24) # Queue of 24 connections
-    print("wDUCO address", wrapper_public_key)
+
+    # print("wDUCO address", wrapper_public_key) # uncomment
+
     threading.Thread(target=InputManagement).start() # Admin input management thread
     # a forever loop until client wants to exit
     try:

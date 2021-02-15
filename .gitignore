@@ -9,3 +9,5 @@ crypto_database.db
 duino_blockchain.db
 *.db
 database.py
+Flask Server/flasksite/__pycache__/__init__.cpython-37.pyc
+*.pyc
