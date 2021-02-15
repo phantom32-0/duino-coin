@@ -5,3 +5,6 @@ Wallet_2.0_resources/wallet.db
 Wallet_2.1_resources/wallet.db
 PCMiner_2.1_resources/Donate_executable.exe
 PCMiner_2.1_resources/Miner_config.cfg
+crypto_database.db
+duino_blockchain.db
+*.db
