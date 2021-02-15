@@ -16,7 +16,7 @@ import mysql.connector
 Database_User = "DucoServer"
 Database_Name = "ducotest"
 Database_password = "DucoTest123"
-Database_Host = "127.0.0.1"
+Database_Host = "Node-Server.camdvr.org"
 Database_Port = 3306
 
 host = "0.0.0.0" # Server will use this as hostname to bind to (localhost on Windows, 0.0.0.0 on Linux in most cases)
@@ -73,15 +73,15 @@ with mysql.connector.connect(user=Database_User, password=Database_password, hos
     datab = conn.cursor()
     datab.execute('''CREATE TABLE IF NOT EXISTS users(username TEXT, password TEXT, email TEXT, balance REAL)''')
     datab.execute('''CREATE TABLE IF NOT EXISTS server(blocks REAL, lastBlockHash TEXT)''')
-    
+
     lastBlockHash = "ba29a15896fd2d792d5c4b60668bf2b9feebc51d" # First block - SHA1 of "duino-coin"
     blocks = 1 # Start from 1
-    
+
 ##    datab.execute("INSERT INTO server(blocks, lastBlockHash) VALUES(%s, %s)", (blocks, lastBlockHash))
 ##    conn.commit()
-    
-    
-        
+
+
+
 blockchain = 'duino_blockchain.db' # Blockchain database location
 # def createBackup():
     # if not os.path.isdir('backups/'):
@@ -735,7 +735,7 @@ def handle(c):
                                 break
                         except:
                             pass
-                    
+
                 if str(recipient) == str(username): # Verify that the balance is higher or equal to transfered amount
                     try:
                         c.send(bytes("NO,You're sending funds to yourself", encoding='utf8'))
@@ -867,7 +867,7 @@ def handle(c):
                     else:
                         c.send(bytes("NO,Wrapper disabled", emcoding="utf8"))
                         print("NO,Wrapper disabled")
-                        
+
             ######################################################################
             elif str(data[0]) == "UNWRAP" and str(username) != "":
                 if use_wrapper and wrapper_permission:
