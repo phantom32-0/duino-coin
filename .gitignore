@@ -8,3 +8,4 @@ PCMiner_2.1_resources/Miner_config.cfg
 crypto_database.db
 duino_blockchain.db
 *.db
+database.py
