@@ -11,6 +11,16 @@ from shutil import copyfile
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+database_api_url = "http://127.0.0.1:1000/api/database"
+
+def query(query, fetch='all'):
+    response = requests.get(database_api_url, params={'query': query, 'fetch': fetch})
+
+    if "SELECT" in query:
+        return (response.json()).get('value')
+    else:
+        return (response.json())
+
 host = "" # Server will use this as hostname to bind to (localhost on Windows, 0.0.0.0 on Linux in most cases)
 port = 2811 # Server will listen on this port - 2811 for official Duino-Coin server
 serverVersion = 2.0 # Server version which will be sent to the clients
